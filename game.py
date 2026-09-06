@@ -47,7 +47,8 @@ class Model:
             target = min(target, 75)
         change = (115 if brake or abs(self.x) > 1 else 45) * dt
         self.speed += max(-change, min(change, target - self.speed))
-        self.x += (steer * 1.35 - self.curve * .12) * dt * self.speed / 180
+        # The arcade car follows its lane through bends unless the player steers.
+        self.x += steer * 1.35 * dt * self.speed / 180
         self.x = max(-1.18, min(1.18, self.x))
         self.distance += self.speed * dt
         self.spawn_timer -= dt

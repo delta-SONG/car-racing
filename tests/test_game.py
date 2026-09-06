@@ -9,10 +9,36 @@ class ModelTests(unittest.TestCase):
             m=Model(1)
             m.spawn_timer=9999
             for _ in range(fps*20):
-                m.update(1/fps,steer=m.curve*.12/1.35,gas=True)
+                m.update(1/fps,gas=True)
             results.append((m.speed,m.distance))
         self.assertLess(max(r[1] for r in results)-min(r[1] for r in results),6)
         self.assertTrue(all(r[0]==220 for r in results))
+
+    def test_no_input_holds_lane_through_bends(self):
+        for fps in (30, 60, 144):
+            for lane in (-.66, 0, .66):
+                with self.subTest(fps=fps, lane=lane):
+                    m=Model(1)
+                    m.x=lane
+                    m.spawn_timer=9999
+                    for _ in range(fps*600):
+                        m.update(1/fps)
+                    self.assertAlmostEqual(m.x,lane)
+                    self.assertEqual(m.speed,180)
+
+    def test_releasing_steering_stops_lateral_motion(self):
+        for direction in (-1, 1):
+            with self.subTest(direction=direction):
+                m=Model(1)
+                m.speed=180
+                m.spawn_timer=9999
+                for _ in range(20):
+                    m.update(1/60,steer=direction)
+                released_x=m.x
+                self.assertGreater(released_x*direction,0)
+                for _ in range(60*30):
+                    m.update(1/60)
+                self.assertAlmostEqual(m.x,released_x)
 
     def test_collision_and_immunity(self):
         m=Model(1)
