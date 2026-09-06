@@ -1,0 +1,7 @@
+.venv/
+.venv-macos/
+__pycache__/
+build/
+dist/
+*.spec
+assets/NotoSansSC.ttf

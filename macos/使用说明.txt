@@ -1,0 +1,22 @@
+极速公路 · macOS 版
+
+安装：打开 DMG，将 SpeedHighway.app 拖到 Applications 文件夹，然后从“应用程序”启动。
+arm64 版适用于 Apple 芯片 Mac；x86_64 版适用于 Intel Mac。
+玩家无需安装 Python，无需联网。
+
+操作：
+方向键 / WASD：转向、加速与刹车。
+Enter / 空格：开始、重试或继续。
+Esc：暂停或继续。
+F：全屏切换（也支持 F11；Mac 键盘可能需要 Fn+F11）。
+M：静音或恢复声音。
+
+存档：~/Library/Application Support/SpeedHighway/save.json
+游戏已内置中文字体，字体许可随附。
+
+构建说明：当前脚本生成本地 ad-hoc 签名应用，未进行 Apple 开发者签名及公证。
+macOS 可能要求确认应用来源；如系统阻止打开，请仅在确认文件来自可信来源后，
+按照 macOS“系统设置 → 隐私与安全性”显示的提示操作。
+不需要关闭系统安全功能。
+
+此安装说明适用于已成功构建的 DMG；源码准备包本身不是安装包。
