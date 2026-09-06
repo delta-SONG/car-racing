@@ -18,7 +18,7 @@ def save_directory(platform=None, home=None, environ=None):
 def chinese_font(platform=None, root=None):
     platform = sys.platform if platform is None else platform
     root = Path(__file__).resolve().parent if root is None else Path(root)
-    bundled = root / 'assets' / 'NotoSansSC.ttf'
+    bundled = root / 'assets' / 'NotoSansCJKsc-Regular.otf'
     windows = Path(os.environ.get('WINDIR', 'C:/Windows')) / 'Fonts' / 'msyh.ttc'
     candidates = [windows, bundled] if platform == 'win32' else [bundled]
     if platform == 'darwin':

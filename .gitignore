@@ -5,3 +5,4 @@ build/
 dist/
 *.spec
 assets/NotoSansSC.ttf
+assets/NotoSansCJKsc-Regular.otf

@@ -18,7 +18,7 @@ class PlatformTests(unittest.TestCase):
     def test_bundled_font_is_independent_of_working_directory(self):
         root = Path(__file__).resolve().parents[1]
         font_path = chinese_font('darwin', root)
-        self.assertEqual(font_path, str(root / 'assets' / 'NotoSansSC.ttf'))
+        self.assertEqual(font_path, str(root / 'assets' / 'NotoSansCJKsc-Regular.otf'))
         pg.font.init()
         font = pg.font.Font(font_path, 24)
         self.assertTrue(all(metric is not None for metric in font.metrics('极速公路开始挑战生命最高纪录●')))

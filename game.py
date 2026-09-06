@@ -1,6 +1,7 @@
 """Speed Highway — offline, procedural arcade racer."""
 import argparse
 import array
+from collections import OrderedDict
 import json
 import math
 from pathlib import Path
@@ -86,6 +87,7 @@ class Game:
         self.canvas = pg.Surface((W, H))
         self.clock = pg.time.Clock()
         self.fonts = {}
+        self.text_cache = OrderedDict()
         self.font_path = chinese_font()
         self.best, self.muted = 0, False
         if not args.smoke:
@@ -130,7 +132,15 @@ class Game:
     def text(self, value, x, y, size=24, color=(240, 247, 240), center=False):
         if size not in self.fonts:
             self.fonts[size] = pg.font.Font(self.font_path, size)
-        surface = self.fonts[size].render(str(value), True, color)
+        cache_key = (str(value), size, tuple(color))
+        surface = self.text_cache.get(cache_key)
+        if surface is None:
+            surface = self.fonts[size].render(str(value), True, color)
+            self.text_cache[cache_key] = surface
+            if len(self.text_cache) > 128:
+                self.text_cache.popitem(last=False)
+        else:
+            self.text_cache.move_to_end(cache_key)
         self.canvas.blit(surface, surface.get_rect(center=(x, y)) if center else (x, y))
 
     def project(self, z, lane=0):
@@ -241,7 +251,8 @@ class Game:
         size=(max(1,int(W*scale)),max(1,int(H*scale)))
         self.viewport=pg.Rect((sw-size[0])//2,(sh-size[1])//2,*size)
         self.screen.fill((10,23,30))
-        self.screen.blit(pg.transform.smoothscale(self.canvas,size),self.viewport)
+        frame = self.canvas if size == (W, H) else pg.transform.smoothscale(self.canvas,size)
+        self.screen.blit(frame,self.viewport)
         pg.display.flip()
 
     def action(self, action):

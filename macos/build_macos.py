@@ -27,8 +27,8 @@ def main():
     for tool in ('hdiutil', 'codesign', 'ditto'):
         if not shutil.which(tool):
             raise SystemExit(f'Missing macOS tool: {tool}')
-    if not (ROOT / 'assets' / 'NotoSansSC.ttf').is_file():
-        raise SystemExit('Missing bundled Chinese font: assets/NotoSansSC.ttf')
+    if not (ROOT / 'assets' / 'NotoSansCJKsc-Regular.otf').is_file():
+        raise SystemExit('Missing bundled Chinese font: assets/NotoSansCJKsc-Regular.otf')
     work = ROOT / 'build' / 'macos' / arch
     output = ROOT / 'dist' / 'macos' / arch
     work.mkdir(parents=True, exist_ok=True)

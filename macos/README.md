@@ -22,7 +22,7 @@
 ## 适配
 
 - 存档：`~/Library/Application Support/SpeedHighway/save.json`。
-- 字体：内置 Noto Sans SC（SIL OFL 1.1），不依赖 Windows 字体。
+- 字体：内置 Noto Sans CJK SC Regular（SIL OFL 1.1），不依赖 Windows 字体。
 - 全屏：按 F，或 F11 / Fn+F11。
 - 签名：PyInstaller 默认 ad-hoc 签名，不含 Apple 开发者证书或 Apple 公证。
 
