@@ -85,7 +85,6 @@ class Game:
         self.screen = pg.display.set_mode((W, H), pg.RESIZABLE)
         pg.display.set_caption('极速公路 · SPEED HIGHWAY')
         self.canvas = pg.Surface((W, H))
-        self.clock = pg.time.Clock()
         self.fonts = {}
         self.text_cache = OrderedDict()
         self.font_path = chinese_font()
@@ -269,10 +268,18 @@ class Game:
 
     def run(self):
         started=time.monotonic()
+        last_frame=time.perf_counter()
         frames=0
         if self.args.smoke: self.action('start')
         while self.running:
-            dt=min(self.clock.tick(60)/1000,.1)
+            # SDL_Delay used by Clock.tick oversleeps on some macOS hosts.
+            # Python's high-resolution sleep avoids a CPU-intensive busy loop.
+            wait_for=1/60-(time.perf_counter()-last_frame)
+            if wait_for>0:
+                time.sleep(wait_for)
+            frame_now=time.perf_counter()
+            dt=min(frame_now-last_frame,.1)
+            last_frame=frame_now
             for event in pg.event.get():
                 if event.type==pg.QUIT: self.running=False
                 elif event.type==pg.WINDOWFOCUSLOST and self.state=='playing' and not self.args.smoke: self.state='paused'

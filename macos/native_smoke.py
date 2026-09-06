@@ -24,9 +24,3 @@ except (subprocess.TimeoutExpired, RuntimeError) as error:
         json.dumps({'native_window_test': 'unavailable', 'reason': str(error)}, indent=2),
         encoding='utf-8')
     print(f'Native desktop test unavailable: {error}')
-
-profile = subprocess.run([os.sys.executable, '-m', 'cProfile', '-s', 'tottime',
-                          str(root / 'game.py'), '--smoke', '10'],
-                         cwd=root, env=environment, timeout=60, capture_output=True, text=True)
-(output / 'render-profile.txt').write_text(profile.stdout + profile.stderr, encoding='utf-8')
-print('\n'.join(profile.stdout.splitlines()[:32]))
