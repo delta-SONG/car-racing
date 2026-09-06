@@ -1,2 +1,4 @@
 pygame==2.6.1
 pyinstaller==6.19.0
+pyobjc-core==11.1; sys_platform == "darwin"
+pyobjc-framework-Cocoa==11.1; sys_platform == "darwin"

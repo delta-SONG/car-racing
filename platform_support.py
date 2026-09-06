@@ -25,3 +25,25 @@ def chinese_font(platform=None, root=None):
         candidates.extend([Path('/System/Library/Fonts/PingFang.ttc'),
                            Path('/System/Library/Fonts/STHeiti Light.ttc')])
     return next((str(path) for path in candidates if path.is_file()), None)
+
+
+class InteractiveActivity:
+    """Request precise timers only while playing; do not change system settings."""
+    def __init__(self):
+        self.process = None
+        self.token = None
+        if sys.platform == 'darwin':
+            from Foundation import (NSProcessInfo, NSActivityLatencyCritical,
+                                    NSActivityUserInitiatedAllowingIdleSystemSleep)
+            self.process = NSProcessInfo.processInfo()
+            self.options = NSActivityLatencyCritical | NSActivityUserInitiatedAllowingIdleSystemSleep
+
+    def set_active(self, active):
+        if self.process is None:
+            return
+        if active and self.token is None:
+            self.token = self.process.beginActivityWithOptions_reason_(
+                self.options, 'Interactive SpeedHighway racing animation')
+        elif not active and self.token is not None:
+            self.process.endActivity_(self.token)
+            self.token = None
