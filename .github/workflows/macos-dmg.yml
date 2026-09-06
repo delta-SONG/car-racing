@@ -49,5 +49,6 @@ jobs:
             dist/macos/${{ matrix.arch }}/*.sha256
             dist/macos/${{ matrix.arch }}/*.json
             dist/macos/${{ matrix.arch }}/*.png
+            dist/macos/${{ matrix.arch }}/*.txt
           if-no-files-found: error
           retention-days: 30
