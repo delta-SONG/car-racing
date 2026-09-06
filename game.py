@@ -6,10 +6,11 @@ import json
 import math
 from pathlib import Path
 import random
+import sys
 import time
 
 import pygame as pg
-from platform_support import InteractiveActivity, chinese_font, save_directory
+from platform_support import chinese_font, save_directory
 
 W, H = 1280, 720
 MAX_SPEED = 220.0
@@ -82,7 +83,6 @@ class Game:
         pg.mixer.pre_init(22050, -16, 1, 512)
         pg.init()
         self.args = args
-        self.native_activity = InteractiveActivity()
         self.screen = pg.display.set_mode((W, H), pg.RESIZABLE)
         pg.display.set_caption('极速公路 · SPEED HIGHWAY')
         self.canvas = pg.Surface((W, H))
@@ -273,12 +273,16 @@ class Game:
         frames=0
         if self.args.smoke: self.action('start')
         while self.running:
-            self.native_activity.set_active(self.state == 'playing')
-            # SDL_Delay used by Clock.tick oversleeps on some macOS hosts.
-            # Python's high-resolution sleep avoids a CPU-intensive busy loop.
+            # macOS can coalesce both SDL and Python sleeps to ~40 ms.
+            # Use a precise wait only while driving; menus and pause still sleep.
             wait_for=1/60-(time.perf_counter()-last_frame)
             if wait_for>0:
-                time.sleep(wait_for)
+                if sys.platform=='darwin' and self.state=='playing':
+                    deadline=last_frame+1/60
+                    while time.perf_counter()<deadline:
+                        pass
+                else:
+                    time.sleep(wait_for)
             frame_now=time.perf_counter()
             dt=min(frame_now-last_frame,.1)
             last_frame=frame_now
@@ -334,7 +338,6 @@ class Game:
                 self.running=False
         self.best=max(self.best,self.model.score)
         self.save()
-        self.native_activity.set_active(False)
         pg.quit()
 
 
