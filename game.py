@@ -15,6 +15,14 @@ from platform_support import chinese_font, save_directory
 W, H = 1280, 720
 MAX_SPEED = 220.0
 SAVE_DIR = save_directory()
+VEHICLES = (
+    {'id': 'scarlet', 'name': '极速跑车', 'shape': 'racer', 'color': (238, 91, 66), 'accent': (255, 215, 116)},
+    {'id': 'azure', 'name': '巡航轿跑', 'shape': 'coupe', 'color': (52, 170, 222), 'accent': (184, 239, 255)},
+    {'id': 'trail', 'name': '方盒越野', 'shape': 'suv', 'color': (91, 182, 114), 'accent': (238, 231, 172)},
+    {'id': 'amber', 'name': '复古肌肉', 'shape': 'muscle', 'color': (244, 164, 61), 'accent': (255, 232, 185)},
+    {'id': 'violet', 'name': '城市掀背', 'shape': 'hatch', 'color': (176, 103, 216), 'accent': (242, 207, 255)},
+    {'id': 'cargo', 'name': '重载皮卡', 'shape': 'truck', 'color': (77, 202, 191), 'accent': (202, 255, 242)},
+)
 
 
 class Model:
@@ -57,7 +65,7 @@ class Model:
             velocity = 65 + self.difficulty * 35
             for lane in lanes:
                 self.cars.append({'z': 1700.0, 'x': lane, 'speed': velocity,
-                                  'color': self.rng.choice([(255, 191, 57), (60, 206, 213), (198, 112, 230)]), 'hit': False})
+                                  'vehicle': self.rng.choice(VEHICLES), 'hit': False})
             self.spawn_timer = 3.5 - self.difficulty * 1.4
         collision = False
         for car in self.cars:
@@ -90,12 +98,13 @@ class Game:
         self.fonts = {}
         self.text_cache = OrderedDict()
         self.font_path = chinese_font()
-        self.best, self.muted = 0, False
+        self.best, self.muted, self.vehicle_index = 0, False, 0
         if not args.smoke:
             try:
                 saved = json.loads((SAVE_DIR / 'save.json').read_text('utf-8'))
                 self.best = max(0, int(saved.get('best', 0)))
                 self.muted = bool(saved.get('muted', False))
+                self.vehicle_index = int(saved.get('vehicle', 0)) % len(VEHICLES)
             except (OSError, ValueError, TypeError, AttributeError):
                 pass
         self.model = Model(42 if args.smoke else None)
@@ -121,7 +130,8 @@ class Game:
         try:
             SAVE_DIR.mkdir(parents=True, exist_ok=True)
             temporary = SAVE_DIR / 'save.tmp'
-            temporary.write_text(json.dumps({'best': self.best, 'muted': self.muted}), encoding='utf-8')
+            temporary.write_text(json.dumps({'best': self.best, 'muted': self.muted,
+                                             'vehicle': self.vehicle_index}), encoding='utf-8')
             temporary.replace(SAVE_DIR / 'save.json')
         except OSError:
             pass
@@ -150,19 +160,35 @@ class Game:
         center = W / 2 + bend - self.model.x * 70 * (1 - scale)
         return center + lane * 540 * scale, 245 + 490 * scale, 540 * scale
 
-    def car(self, x, y, width, color, player=False):
+    def car(self, x, y, width, vehicle, player=False):
         width = max(8, int(width))
-        height = int(width * 1.4)
+        shape, color, accent = vehicle['shape'], vehicle['color'], vehicle['accent']
+        height = int(width * {'racer': 1.4, 'coupe': 1.32, 'suv': 1.25,
+                              'muscle': 1.18, 'hatch': 1.28, 'truck': 1.08}[shape])
         x, y = int(x), int(y)
         pg.draw.ellipse(self.canvas, (25, 39, 38), (x-width*.62, y-12, width*1.24, 22))
         body = pg.Rect(x-width//2, y-height, width, height)
         for side in [-1, 1]:
-            pg.draw.rect(self.canvas, (18, 27, 36), (x+side*width*.48-width*.1, y-height*.76, width*.2, height*.7), border_radius=max(1,width//15))
+            tire_height = .54 if shape == 'truck' else .7
+            pg.draw.rect(self.canvas, (18, 27, 36), (x+side*width*.48-width*.1, y-height*.76, width*.2, height*tire_height), border_radius=max(1,width//15))
         pg.draw.rect(self.canvas, color, body, border_radius=max(2, width//7))
-        pg.draw.polygon(self.canvas, (24, 55, 72), [(x-width*.32,y-height*.76),(x+width*.32,y-height*.76),(x+width*.39,y-height*.4),(x-width*.39,y-height*.4)])
+        if shape == 'truck':
+            pg.draw.rect(self.canvas, (31, 65, 78), (x-width*.37, y-height*.77, width*.74, height*.30), border_radius=max(1, width//12))
+            pg.draw.rect(self.canvas, accent, (x-width*.28, y-height*.94, width*.56, height*.12))
+        elif shape == 'suv':
+            pg.draw.polygon(self.canvas, (26, 65, 77), [(x-width*.32,y-height*.79),(x+width*.32,y-height*.79),(x+width*.38,y-height*.36),(x-width*.38,y-height*.36)])
+            pg.draw.rect(self.canvas, accent, (x-width*.33,y-height*.93,width*.66,height*.1))
+        elif shape == 'muscle':
+            pg.draw.rect(self.canvas, (43, 57, 66), (x-width*.34, y-height*.65, width*.68, height*.25), border_radius=max(1, width//16))
+            pg.draw.rect(self.canvas, accent, (x-width*.15,y-height*.92,width*.3,height*.16))
+        elif shape == 'hatch':
+            pg.draw.polygon(self.canvas, (24, 55, 72), [(x-width*.29,y-height*.79),(x+width*.29,y-height*.79),(x+width*.38,y-height*.39),(x-width*.39,y-height*.39)])
+            pg.draw.rect(self.canvas, accent, (x-width*.12,y-height*.94,width*.24,height*.15))
+        else:
+            pg.draw.polygon(self.canvas, (24, 55, 72), [(x-width*.32,y-height*.76),(x+width*.32,y-height*.76),(x+width*.39,y-height*.4),(x-width*.39,y-height*.4)])
+            pg.draw.rect(self.canvas, accent, (x-width*.08,y-height*.96,width*.16,height*.18))
         pg.draw.rect(self.canvas, (255, 232, 174), (x-width*.34,y-height*.12,width*.2,height*.055))
         pg.draw.rect(self.canvas, (255, 232, 174), (x+width*.14,y-height*.12,width*.2,height*.055))
-        pg.draw.rect(self.canvas, (240, 239, 219), (x-width*.08,y-height*.96,width*.16,height*.18))
         if player:
             pg.draw.rect(self.canvas, (30, 39, 47), (x-width*.55,y-height*.23,width*1.1,8), border_radius=3)
 
@@ -196,10 +222,10 @@ class Game:
         for car in sorted(self.model.cars,key=lambda a:a['z'],reverse=True):
             if car['z'] >= 0:
                 x,y,r = self.project(car['z'],car['x'])
-                self.car(x,y,r*.20,car['color'])
+                self.car(x,y,r*.20,car['vehicle'])
         if self.model.invulnerable <= 0 or int(self.model.invulnerable*12)%2:
             px, py, _ = self.project(24, self.model.x)
-            self.car(px,py,108,(238,91,66),True)
+            self.car(px,py,108,VEHICLES[self.vehicle_index],True)
 
     def button(self, label, rect, action, primary=False):
         r = pg.Rect(rect)
@@ -233,7 +259,9 @@ class Game:
                 self.text('复古公路 · 无限超车挑战',640,282,22,center=True)
                 self.text('方向键 / WASD 转向、加速和刹车',640,333,21,center=True)
                 self.text('自动加速 · 三次碰撞结束 · 超车 +150',640,370,20,center=True)
-                self.text(f'最高纪录  {self.best:06d}',640,417,23,(238,180,72),True)
+                selected = VEHICLES[self.vehicle_index]
+                self.text(f'车型库  {selected["name"]}',640,415,23,(238,180,72),True)
+                self.car(640,478,72,selected,True)
             elif self.state == 'over':
                 self.text(f'{self.model.score:06d}',640,305,54,(238,180,72),True)
                 self.text(f'超车 {self.model.passed} 辆  ·  行驶 {self.model.distance/1000:.2f} km',640,369,23,center=True)
@@ -241,12 +269,18 @@ class Game:
             else:
                 self.text('呼吸一下，再向前出发。',640,310,25,center=True)
                 self.text('F / F11 全屏  ·  M 静音  ·  ESC 继续',640,375,21,center=True)
-            self.button('继续驾驶' if self.state=='paused' else '开始挑战' if self.state=='menu' else '再跑一次',(415,468,450,58),'resume' if self.state=='paused' else 'start',True)
-            if self.state=='paused':
-                self.button('重新开始',(415,543,215,50),'start')
-                self.button('返回首页',(650,543,215,50),'menu')
+            if self.state == 'menu':
+                self.button('‹',(394,440,70,52),'vehicle_prev')
+                self.button('›',(816,440,70,52),'vehicle_next')
+                self.button('开始挑战',(415,510,450,58),'start',True)
+                self.button('退出游戏',(415,578,450,42),'quit')
             else:
-                self.button('返回首页' if self.state!='menu' else '退出游戏',(415,543,450,50),'menu' if self.state!='menu' else 'quit')
+                self.button('继续驾驶' if self.state=='paused' else '再跑一次',(415,468,450,58),'resume' if self.state=='paused' else 'start',True)
+                if self.state=='paused':
+                    self.button('重新开始',(415,543,215,50),'start')
+                    self.button('返回首页',(650,543,215,50),'menu')
+                else:
+                    self.button('返回首页',(415,543,450,50),'menu')
         sw,sh=self.screen.get_size()
         scale=min(sw/W,sh/H)
         size=(max(1,int(W*scale)),max(1,int(H*scale)))
@@ -267,6 +301,9 @@ class Game:
         elif action=='resume': self.state='playing'
         elif action=='menu': self.state='menu'
         elif action=='quit': self.running=False
+        elif action in ('vehicle_prev', 'vehicle_next'):
+            self.vehicle_index = (self.vehicle_index + (-1 if action == 'vehicle_prev' else 1)) % len(VEHICLES)
+            self.save()
 
     def run(self):
         started=time.monotonic()
@@ -303,6 +340,8 @@ class Game:
                         else: self.state='menu'
                     elif event.key in (pg.K_RETURN,pg.K_SPACE) and self.state!='playing':
                         self.action('resume' if self.state=='paused' else 'start')
+                    elif self.state == 'menu' and event.key in (pg.K_LEFT, pg.K_a, pg.K_RIGHT, pg.K_d):
+                        self.action('vehicle_prev' if event.key in (pg.K_LEFT, pg.K_a) else 'vehicle_next')
                 elif event.type==pg.MOUSEBUTTONDOWN and event.button==1 and hasattr(self,'viewport'):
                     mx=(event.pos[0]-self.viewport.x)*W/self.viewport.width
                     my=(event.pos[1]-self.viewport.y)*H/self.viewport.height

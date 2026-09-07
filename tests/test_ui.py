@@ -16,7 +16,12 @@ class InterfaceTests(unittest.TestCase):
             app=game.Game(args)
             app.draw()
             pg.image.save(app.canvas,'menu.png')
-            self.assertEqual(len(app.buttons),2)
+            self.assertEqual(len(app.buttons),4)
+            original_vehicle=app.vehicle_index
+            app.action('vehicle_next')
+            self.assertEqual(app.vehicle_index,(original_vehicle+1) % len(game.VEHICLES))
+            app.action('vehicle_prev')
+            self.assertEqual(app.vehicle_index,original_vehicle)
             app.action('start')
             self.assertEqual(app.state,'playing')
             app.model.distance=5000
@@ -63,6 +68,7 @@ class InterfaceTests(unittest.TestCase):
             restored=game.Game(args)
             self.assertEqual(restored.best,1000)
             self.assertTrue(restored.muted)
+            self.assertEqual(restored.vehicle_index,original_vehicle)
             restored.state='over'
             restored.draw()
             pg.image.save(restored.canvas,'results.png')

@@ -1,5 +1,5 @@
 import unittest
-from game import Model
+from game import Model, VEHICLES
 
 
 class ModelTests(unittest.TestCase):
@@ -84,6 +84,18 @@ class ModelTests(unittest.TestCase):
             m.update(.01)
             self.assertLessEqual(len(m.cars),2)
             self.assertEqual(len({c['x'] for c in m.cars}),len(m.cars))
+            self.assertIn(m.cars[0]['vehicle'], VEHICLES)
+
+    def test_traffic_uses_multiple_vehicle_models(self):
+        m=Model(9)
+        m.speed=180
+        models=set()
+        for _ in range(80):
+            m.cars=[]
+            m.spawn_timer=0
+            m.update(.01)
+            models.update(car['vehicle']['id'] for car in m.cars)
+        self.assertGreater(len(models), 3)
 
 
 if __name__=='__main__': unittest.main()
