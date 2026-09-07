@@ -260,7 +260,8 @@ class Game:
                 self.text('方向键 / WASD 转向、加速和刹车',640,333,21,center=True)
                 self.text('自动加速 · 三次碰撞结束 · 超车 +150',640,370,20,center=True)
                 selected = VEHICLES[self.vehicle_index]
-                self.text(f'车型库  {selected["name"]}',640,415,23,(238,180,72),True)
+                self.text('车型库',500,415,23,(238,180,72),True)
+                self.text(selected['name'],780,415,23,(238,180,72),True)
                 self.car(640,478,72,selected,True)
             elif self.state == 'over':
                 self.text(f'{self.model.score:06d}',640,305,54,(238,180,72),True)
