@@ -335,7 +335,9 @@ class Game:
                 pg.image.save(self.canvas,self.args.screenshot)
             if self.args.smoke and time.monotonic()-started>=self.args.smoke:
                 if self.args.report:
-                    Path(self.args.report).write_text(json.dumps({'seconds':time.monotonic()-started,'frames':frames,'average_fps':frames/(time.monotonic()-started),'score':self.model.score,'life':self.model.life}),encoding='utf-8')
+                    report_path = Path(self.args.report)
+                    report_path.parent.mkdir(parents=True, exist_ok=True)
+                    report_path.write_text(json.dumps({'seconds':time.monotonic()-started,'frames':frames,'average_fps':frames/(time.monotonic()-started),'score':self.model.score,'life':self.model.life}),encoding='utf-8')
                 self.running=False
         self.best=max(self.best,self.model.score)
         self.save()
