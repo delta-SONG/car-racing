@@ -39,7 +39,7 @@
 Get-FileHash .\SpeedHighway3D.exe -Algorithm SHA256
 ```
 
-正确的 SHA-256 为 `A2835915FEBB7AEFD10EA38D25B5D1C84A55826BFD6190DE35105FBAE96E1795`。经典 2D 版的文件名为 `SpeedHighway.exe`，本分支不提供该文件。
+正确的 SHA-256 为 `4AE52BD9CEDCFF72AE3CC73D96BC2EBB2EF644A3B8A501C2B2298EE4A438BF36`。经典 2D 版的文件名为 `SpeedHighway.exe`，本分支不提供该文件。
 
 ## 操作方法
 
