@@ -1,5 +1,5 @@
 """Speed Highway — procedural low-poly 3D edition."""
-import argparse, json, math, random, time
+import argparse, json, math, random, time, os
 from pathlib import Path
 from panda3d.core import CardMaker, AmbientLight, DirectionalLight, Fog, Filename, NodePath, TextNode, TransparencyAttrib, WindowProperties, loadPrcFileData
 from direct.gui.DirectGui import DirectButton, DirectFrame
@@ -122,7 +122,7 @@ class Game3D(ShowBase):
    steer=int(bool({'arrow_right','d'}&self.keys))-int(bool({'arrow_left','a'}&self.keys));gas=bool({'arrow_up','w'}&self.keys) or bool(self.args.smoke);brake=bool({'arrow_down','s'}&self.keys);self.model.update(dt,steer,gas,brake)
    if self.model.dead:self.best=max(self.best,self.model.score);self.save();self.state='over';self.refresh()
   self.scene(dt);self.hudtext.setText(f'极速公路     {int(self.model.speed):03d} km/h     分数 {self.model.score:06d}     生命 '+('● '*self.model.life)+f'    最高 {self.best}');self.frames+=1
-  if self.args.screenshot and self.frames==90:self.win.saveScreenshot(Filename(self.args.screenshot))
+  if self.args.screenshot and self.frames==90 and self.win:self.win.saveScreenshot(Filename(self.args.screenshot))
   if self.args.smoke and now-self.started>=self.args.smoke:
    if self.args.report:
     p=Path(self.args.report);p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps({'seconds':now-self.started,'frames':self.frames,'average_fps':self.frames/(now-self.started),'score':self.model.score,'life':self.model.life}),encoding='utf-8')
@@ -130,6 +130,7 @@ class Game3D(ShowBase):
   return task.cont
 if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--smoke',type=float,default=0);p.add_argument('--screenshot');p.add_argument('--report');Game3D(p.parse_args()).run()
+
 
 
 
