@@ -1,0 +1,34 @@
+name: Replace Windows EXE
+
+on:
+  push:
+    branches: [codex/windows-exe]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/windows-exe
+      - name: Download fixed executable
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download windows-exe-visual-fix-20260911 --repo delta-SONG/car-racing --pattern SpeedHighway3D.exe --dir dist/windows --clobber
+      - name: Verify and commit executable
+        shell: pwsh
+        run: |
+          $expected = 'A2835915FEBB7AEFD10EA38D25B5D1C84A55826BFD6190DE35105FBAE96E1795'
+          $executable = 'dist/windows/SpeedHighway3D.exe'
+          $actual = (Get-FileHash -Algorithm SHA256 $executable).Hash
+          if ($actual -ne $expected) { throw "SHA-256 mismatch: $actual" }
+          "$expected  SpeedHighway3D.exe" | Set-Content -Encoding ascii 'dist/windows/SpeedHighway3D.exe.sha256'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f $executable 'dist/windows/SpeedHighway3D.exe.sha256'
+          git rm '.github/workflows/replace-windows-exe.yml'
+          git commit -m 'Replace Windows EXE with visual fixes'
+          git push origin HEAD:codex/windows-exe
