@@ -1,0 +1,33 @@
+name: Replace Windows EXE with straight highway
+
+on:
+  push:
+    branches: [codex/windows-exe]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/windows-exe
+      - name: Download verified build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download windows-exe-straight-road-20260911 --repo delta-SONG/car-racing --pattern SpeedHighway3D.exe --dir dist/windows --clobber
+      - name: Commit executable and checksum
+        shell: pwsh
+        run: |
+          $expected = '4AE52BD9CEDCFF72AE3CC73D96BC2EBB2EF644A3B8A501C2B2298EE4A438BF36'
+          $actual = (Get-FileHash dist/windows/SpeedHighway3D.exe -Algorithm SHA256).Hash
+          if ($actual -ne $expected) { throw "Unexpected SHA-256: $actual" }
+          Set-Content -LiteralPath dist/windows/SpeedHighway3D.exe.sha256 -Value "$expected  SpeedHighway3D.exe" -NoNewline
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f dist/windows/SpeedHighway3D.exe dist/windows/SpeedHighway3D.exe.sha256
+          git rm .github/workflows/replace-windows-exe-straight.yml
+          git commit -m 'Use straight parallel highway in Windows EXE'
+          git push origin HEAD:codex/windows-exe
