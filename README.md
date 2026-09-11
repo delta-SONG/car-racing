@@ -31,7 +31,7 @@
 
 ### Windows
 
-从 [`codex/windows-exe` 分支下载 SpeedHighway3D.exe](https://github.com/delta-SONG/car-racing/raw/codex/windows-exe/dist/windows/SpeedHighway3D.exe)（约 67.7 MiB），保存后双击即可启动 3D 版，无需安装 Python 或连接网络。
+从 [`codex/windows-exe` 分支下载 SpeedHighway3D.exe](https://github.com/delta-SONG/car-racing/raw/codex/windows-exe/dist/windows/SpeedHighway3D.exe)（约 57.0 MiB），保存后双击即可启动 3D 版，无需安装 Python 或连接网络。
 
 下载后可在 PowerShell 中核对文件：
 
@@ -39,7 +39,7 @@
 Get-FileHash .\SpeedHighway3D.exe -Algorithm SHA256
 ```
 
-正确的 SHA-256 为 `4DF9BA3535796665E31B5536892E29B4A24145C2E346AD2F32D07010891644C4`。经典 2D 版的文件名为 `SpeedHighway.exe`，本分支不提供该文件。
+正确的 SHA-256 为 `A2835915FEBB7AEFD10EA38D25B5D1C84A55826BFD6190DE35105FBAE96E1795`。经典 2D 版的文件名为 `SpeedHighway.exe`，本分支不提供该文件。
 
 ## 操作方法
 
