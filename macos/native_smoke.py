@@ -10,7 +10,8 @@ output = root / 'dist' / 'macos' / platform.machine()
 environment = dict(os.environ)
 environment['SDL_VIDEODRIVER'] = 'cocoa'
 command = [str(output / 'SpeedHighway.app' / 'Contents' / 'MacOS' / 'SpeedHighway'),
-           '--smoke', '10', '--report', str(output / 'native-smoke-report.json'),
+           '--smoke', '10', '--native-window-smoke',
+           '--report', str(output / 'native-smoke-report.json'),
            '--screenshot', str(output / 'native-gameplay.png')]
 try:
     result = subprocess.run(command, env=environment, timeout=60, capture_output=True, text=True)
