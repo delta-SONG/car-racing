@@ -1,2 +1,4 @@
 pygame==2.6.1
 pyinstaller==6.19.0
+panda3d==1.10.15
+

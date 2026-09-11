@@ -33,12 +33,12 @@ def main():
     output = ROOT / 'dist' / 'macos' / arch
     work.mkdir(parents=True, exist_ok=True)
     output.mkdir(parents=True, exist_ok=True)
-    run(sys.executable, '-m', 'PyInstaller', '--noconfirm', '--clean', '--onedir',
+    run(sys.executable, '-m', 'PyInstaller', '--noconfirm', '--clean', '--onedir', '--collect-all', 'panda3d',
         '--windowed', '--name', 'SpeedHighway', '--target-arch', arch,
         '--osx-bundle-identifier', 'local.speedhighway.game',
         '--add-data', f'{ROOT / "assets"}:assets',
         '--distpath', output, '--workpath', work / 'pyinstaller', '--specpath', work,
-        ROOT / 'game.py')
+        ROOT / 'game3d.py')
     app = output / 'SpeedHighway.app'
     run('codesign', '--verify', '--deep', '--strict', app)
     # Verify the actual frozen executable, not just the source interpreter.
@@ -81,3 +81,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
