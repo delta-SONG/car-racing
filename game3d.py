@@ -1,5 +1,5 @@
 """Speed Highway — procedural low-poly 3D edition."""
-import argparse, json, math, random, time, os
+import argparse, json, math, random, time, os, sys
 from pathlib import Path
 from panda3d.core import CardMaker, AmbientLight, DirectionalLight, Fog, Filename, NodePath, TextNode, TransparencyAttrib, WindowProperties, loadPrcFileData
 from direct.gui.DirectGui import DirectButton, DirectFrame
@@ -130,6 +130,7 @@ class Game3D(ShowBase):
   return task.cont
 if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--smoke',type=float,default=0);p.add_argument('--screenshot');p.add_argument('--report');Game3D(p.parse_args()).run()
+
 
 
 
