@@ -29,6 +29,11 @@ def main():
             raise SystemExit(f'Missing macOS tool: {tool}')
     if not (ROOT / 'assets' / 'NotoSansCJKsc-Regular.otf').is_file():
         raise SystemExit('Missing bundled Chinese font: assets/NotoSansCJKsc-Regular.otf')
+    # Rocket/Cg are unused legacy Panda3D plug-ins; their wheel payload is Intel-only on Apple Silicon.
+    import panda3d
+    for pattern in ('rocket*.so', 'libRocket*.dylib', 'libCg.dylib'):
+        for legacy in Path(panda3d.__file__).resolve().parent.glob(pattern):
+            legacy.unlink()
     work = ROOT / 'build' / 'macos' / arch
     output = ROOT / 'dist' / 'macos' / arch
     work.mkdir(parents=True, exist_ok=True)
@@ -81,6 +86,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
