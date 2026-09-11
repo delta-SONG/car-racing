@@ -1,7 +1,8 @@
 name: Assemble Windows EXE branch
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [codex/windows-exe]
 
 permissions:
   contents: write
