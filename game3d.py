@@ -38,7 +38,7 @@ class Game3D(ShowBase):
  STEP,COUNT,SCALE=38.,62,18.
  def __init__(self,args):
   self.args=args;loadPrcFileData('','window-title 极速公路 · SPEED HIGHWAY 3D\nwin-size 1280 720\nframebuffer-multisample 1\nmultisamples 4\n')
-  if args.smoke:loadPrcFileData('','window-type offscreen\naudio-library-name null\n')
+  if args.smoke and not args.native_window_smoke:loadPrcFileData('','window-type none\naudio-library-name null\n')
   super().__init__();self.disableMouse();self.font=self.loader.loadFont(Filename.fromOsSpecific(str(Path(__file__).resolve().parent/'assets'/'NotoSansCJKsc-Regular.otf')).getFullpath());self.best,self.muted,self.vehicle_index=0,False,0
   if not args.smoke:
    try:
@@ -62,7 +62,8 @@ class Game3D(ShowBase):
    for x in (-9.,9.):self.cube(p,(x,0,.03),(.22,self.STEP/self.SCALE,.05),(.85,.20,.13,1))
    for x in (-2.85,2.85):self.cube(p,(x,0,.04),(.07,self.STEP/self.SCALE*.68,.025),(.92,.86,.61,1))
    self.road.append(p)
-  self.props=[self.tree() for _ in range(40)];self.player=self.car(VEHICLES[self.vehicle_index],'player');self.player.reparentTo(self.render);self.camera.setPos(0,-13,6.7);self.camera.lookAt(0,10,.2)
+  self.props=[self.tree() for _ in range(40)];self.player=self.car(VEHICLES[self.vehicle_index],'player');self.player.reparentTo(self.render)
+  if self.camera:self.camera.setPos(0,-13,6.7);self.camera.lookAt(0,10,.2)
  def tree(self):
   n=NodePath('tree');n.reparentTo(self.render);self.cube(n,scale=(.2,.2,1),pos=(0,0,.8),color=(.27,.16,.08,1));self.cube(n,scale=(1.1,1.1,2.2),pos=(0,0,2.3),color=(.04,.30,.18,1),hpr=(0,0,45));return n
  def car(self,v,name):
@@ -115,7 +116,7 @@ class Game3D(ShowBase):
    x,y,h=self.pose(b+c['z'],c['x']);n.setPos(x,y,.1);n.setH(h)
    for w in n.getPythonTag('wheels'):w.setP(w.getP()+c['speed']*dt*4)
   for k in set(self.traffic)-live:self.traffic.pop(k).removeNode()
-  self.camera.setPos(self.player.getX()*.35,-13,6.7);self.camera.lookAt(self.player.getX()*.25,11,.15)
+  if self.camera:self.camera.setPos(self.player.getX()*.35,-13,6.7);self.camera.lookAt(self.player.getX()*.25,11,.15)
  def tick(self,task):
   now=time.monotonic();dt=min(now-self.last,.1);self.last=now
   if self.state=='playing':
@@ -129,7 +130,7 @@ class Game3D(ShowBase):
    raise SystemExit(0)
   return task.cont
 if __name__=='__main__':
- p=argparse.ArgumentParser();p.add_argument('--smoke',type=float,default=0);p.add_argument('--screenshot');p.add_argument('--report');Game3D(p.parse_args()).run()
+ p=argparse.ArgumentParser();p.add_argument('--smoke',type=float,default=0);p.add_argument('--native-window-smoke',action='store_true');p.add_argument('--screenshot');p.add_argument('--report');Game3D(p.parse_args()).run()
 
 
 
