@@ -74,9 +74,9 @@ class Game3D(ShowBase):
   for x in (-1.18,1.18):
    for y in (-ln*.58,ln*.58):ws.append(self.cube(n,scale=(.17,.30,.30),pos=(x,y,.35),color=(.025,.03,.035,1)))
   s=self.cube(n,scale=(1.35,ln*.9,.015),pos=(0,0,.04),color=(.02,.03,.025,.42));s.setTransparency(TransparencyAttrib.MAlpha);n.setPythonTag('wheels',ws);return n
- def rx(self,d):return math.sin(d/2100)*16+math.sin(d/4300)*8
+ def rx(self,d):return 0.
  def pose(self,d,lane=0):
-  b=self.model.distance;return self.rx(d)-self.rx(b)+lane*8.,(d-b)/self.SCALE,math.degrees(math.atan2((self.rx(d+10)-self.rx(d-10))/20,1))-math.degrees(math.atan2((self.rx(b+10)-self.rx(b-10))/20,1))
+  b=self.model.distance;return lane*8.,(d-b)/self.SCALE,0.
  def label(self,t,pos,scale=.05,parent=None,align=TextNode.ACenter):return OnscreenText(t,pos=pos,scale=scale,font=self.font,fg=(.94,.97,.92,1),shadow=(0,0,0,.75),shadowOffset=(.035,.035),align=align,parent=parent,mayChange=True)
  def ui(self):
   self.hud=DirectFrame(frameColor=(.03,.08,.1,.87),frameSize=(-1.25,1.25,-.10,.10),pos=(0,0,.89));self.hudtext=self.label('',(-1.15,-.02),.052,self.hud,TextNode.ALeft);self.tip=self.label('',(0,-.90),.042);self.panel=DirectFrame(frameColor=(.03,.09,.11,.90),frameSize=(-.62,.62,-.68,.68),relief=1);self.title=self.label('',(0,.43),.085,self.panel);self.info=self.label('',(0,.17),.042,self.panel);self.pick=self.label('',(0,-.07),.048,self.panel);style={'text_font':self.font,'text_scale':.05,'frameColor':(.16,.30,.34,1),'text_fg':(.94,.96,.90,1),'relief':1,'parent':self.panel};self.left=DirectButton(text='←',command=lambda:self.action('prev'),pos=(-.43,0,-.20),scale=.09,**style);self.right=DirectButton(text='→',command=lambda:self.action('next'),pos=(.43,0,-.20),scale=.09,**style);self.primary=DirectButton(pos=(0,0,-.36),scale=.075,frameColor=(.92,.64,.18,1),text_fg=(.05,.11,.13,1),text_font=self.font,relief=1,parent=self.panel);self.secondary=DirectButton(pos=(0,0,-.53),scale=.06,**style);self.refresh()
@@ -101,7 +101,7 @@ class Game3D(ShowBase):
   active=self.state=='playing';self.hud.show() if active else self.hud.hide();self.panel.hide() if active else self.panel.show();self.tip.setText('方向键 / WASD 驾驶    ESC 暂停    M '+('开启声音' if self.muted else '静音'));self.tip.hide() if active else self.tip.show();self.left.show() if self.state=='menu' else self.left.hide();self.right.show() if self.state=='menu' else self.right.hide()
   if self.state=='menu':self.title.setText('极速公路');self.info.setText('低多边形 3D 公路 · 无限超车挑战\n方向键 / WASD 转向、加速和刹车\n自动加速 · 三次碰撞结束 · 超车 +150');self.pick.setText('车型库  '+VEHICLES[self.vehicle_index]['name']);self.primary['text']='开始挑战';self.primary['command']=lambda:self.action('start');self.secondary['text']='退出游戏';self.secondary['command']=lambda:self.action('quit')
   elif self.state=='paused':self.title.setText('稍作停留');self.info.setText('呼吸一下，再向前出发。\nF11 全屏 · M 静音 · ESC 继续');self.pick.setText('');self.primary['text']='继续驾驶';self.primary['command']=lambda:self.action('resume');self.secondary['text']='返回首页';self.secondary['command']=lambda:self.action('menu')
-  else:self.title.setText('本次旅程结束');self.info.setText(f'{self.model.score:06d}\n超车 {self.model.passed} 辆 · 行驶 {self.model.distance/1000:.2f} km');self.pick.setText(f'最高纪录 {self.best:06d}');self.primary['text']='再跑一次';self.primary['command']=lambda:self.action('start');self.secondary['text']='返回首页';self.secondary['command']=lambda:self.action('menu')
+  elif self.state=='over':self.title.setText('本次旅程结束');self.info.setText(f'{self.model.score:06d}\n超车 {self.model.passed} 辆 · 行驶 {self.model.distance/1000:.2f} km');self.pick.setText(f'最高纪录 {self.best:06d}');self.primary['text']='再跑一次';self.primary['command']=lambda:self.action('start');self.secondary['text']='返回首页';self.secondary['command']=lambda:self.action('menu')
  def scene(self,dt):
   b=self.model.distance
   road_cycle=self.COUNT*self.STEP
