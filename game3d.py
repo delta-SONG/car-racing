@@ -11,7 +11,7 @@ from panda3d.core import ClockObject, Filename, TextNode, WindowProperties, load
 from classic3d_model import MAX_SPEED, Model, VEHICLES
 from escort_model import EscortModel
 from highway_ui import HighwayUI
-from platform_support import chinese_font, save_directory
+from platform_support import chinese_font, save_directory, disable_game_ime, monitor_rectangle
 from procedural_audio import ProceduralAudio
 from scene3d import HighwayScene
 
@@ -44,6 +44,9 @@ class Game3D(HighwayUI, HighwayScene, ShowBase):
         loadPrcFileData("test-window", "window-type " + ("offscreen" if args.smoke and not args.native_smoke else "onscreen"))
         if args.smoke:
             loadPrcFileData("test-audio", "audio-library-name null")
+        # The game has no text-entry fields. Restrict IME only for this
+        # process's window thread, before Panda creates the first window.
+        self.ime_disabled = disable_game_ime()
         super().__init__()
         clock = ClockObject.getGlobalClock()
         clock.setMode(ClockObject.MLimited)
@@ -63,6 +66,7 @@ class Game3D(HighwayUI, HighwayScene, ShowBase):
         self.state = "menu"
         self.keys = set()
         self.fullscreen = False
+        self._windowed_rect = None
         self.model = self.new_model()
         self.frames = self.playing_frames = self.episodes = self.successful_escorts = 0
         self.active_seconds = 0.0
@@ -128,17 +132,18 @@ class Game3D(HighwayUI, HighwayScene, ShowBase):
 
     def events(self):
         for key in ("arrow_left", "arrow_right", "arrow_up", "arrow_down", "w", "a", "s", "d"):
-            self.accept(key, self.key_down, [key])
-            self.accept(key + "-up", self.keys.discard, [key])
+            event = "raw-" + key if len(key) == 1 else key
+            self.accept(event, self.key_down, [key])
+            self.accept(event + "-up", self.keys.discard, [key])
         self.accept("escape", self.pause)
-        self.accept("m", self.mute)
-        self.accept("h", self.signal)
+        self.accept("raw-m", self.mute)
+        self.accept("raw-h", self.signal)
         self.accept("f11", self.full)
-        self.accept("f", self.full)
+        self.accept("raw-f", self.full)
         self.accept("enter", self.confirm)
         self.accept("space", self.confirm)
         self.accept("tab", self.switch_mode)
-        self.accept("c", self.cycle_scenario)
+        self.accept("raw-c", self.cycle_scenario)
 
     def key_down(self, key):
         if self.state == "menu" and key in ("arrow_left", "arrow_right", "a", "d"):
@@ -181,12 +186,23 @@ class Game3D(HighwayUI, HighwayScene, ShowBase):
 
     def full(self):
         if hasattr(self.win, "requestProperties"):
-            self.fullscreen = not self.fullscreen
             properties = WindowProperties()
-            properties.setFullscreen(self.fullscreen)
             if not self.fullscreen:
-                properties.setSize(1280, 720)
+                current = self.win.getProperties()
+                self._windowed_rect = (current.getXOrigin(), current.getYOrigin(),
+                                       current.getXSize(), current.getYSize())
+                fallback = (0, 0, self.pipe.getDisplayWidth(), self.pipe.getDisplayHeight())
+                x, y, width, height = monitor_rectangle(self.win, fallback)
+                properties.setUndecorated(True)
+            else:
+                x, y, width, height = self._windowed_rect or (0, 0, 1280, 720)
+                properties.setUndecorated(False)
+            # Borderless window: never request exclusive fullscreen or a
+            # display mode change; restore the exact previous window geometry.
+            properties.setOrigin(x, y)
+            properties.setSize(width, height)
             self.win.requestProperties(properties)
+            self.fullscreen = not self.fullscreen
 
     def signal(self):
         if self.mode == "escort" and self.state == "playing":
@@ -317,6 +333,7 @@ class Game3D(HighwayUI, HighwayScene, ShowBase):
                     frames=self.frames, average_fps=self.frames / max(elapsed, 0.001),
                     active_driving_seconds=self.active_seconds, playing_frames=self.playing_frames,
                     timing=self.timing,
+                    ime_disabled_for_window_thread=self.ime_disabled,
                     timing_note="Wall intervals and time removed by the unchanged 100ms frame cap; not native performance evidence.",
                     episodes=self.episodes, successful_escorts=self.successful_escorts,
                     completed_results=self.results, score=self.model.score, life=self.model.life,

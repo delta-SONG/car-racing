@@ -116,18 +116,18 @@ def main():
         capture("escort")
 
     def fullscreen():
-        app.messenger.send("f")
+        app.messenger.send("raw-f")
 
     def check_fullscreen():
         check("fullscreen_requested", app.fullscreen)
-        check("native_fullscreen_applied", app.win.getProperties().getFullscreen())
+        check("borderless_fullscreen_applied", app.win.getProperties().getUndecorated() and not app.win.getProperties().getFullscreen())
 
     def windowed():
-        app.messenger.send("f")
+        app.messenger.send("raw-f")
 
     def check_windowed():
         check("windowed_requested", not app.fullscreen)
-        check("native_windowed_applied", not app.win.getProperties().getFullscreen())
+        check("decorated_window_restored", not app.win.getProperties().getUndecorated() and not app.win.getProperties().getFullscreen())
 
     def classic():
         app.action("menu")
@@ -179,7 +179,7 @@ def main():
             model.cars.clear()
         elif kind == "close":
             model.cars[0]["distance"] = 80
-        app.messenger.send("h")
+        app.messenger.send("raw-h")
         if kind == "cancelled":
             model.cars.append(model.make_car(400, -0.66, vehicle=VEHICLES[0]))
             model.update(0.9)
@@ -193,7 +193,7 @@ def main():
             check(name + "_reason_and_action", "占用" in app.feedback.getText()
                   and "S" in app.feedback_hint.getText())
             before = model.passage_feedback, model.cooldown
-            app.messenger.send("h")
+            app.messenger.send("raw-h")
             check(name + "_repeated_h_preserves_reason", before == (model.passage_feedback, model.cooldown))
         elif kind == "cancelled":
             check("cancelled_request_explained", "取消" in app.feedback.getText()
@@ -248,7 +248,7 @@ def main():
         try:
             if app.mode == "escort" and app.state == "playing" and app.model.cooldown <= 0:
                 if any(150 < car["z"] < 400 and car["state"] == "cruising" for car in app.model.cars):
-                    app.messenger.send("h")
+                    app.messenger.send("raw-h")
             if next_action == len(actions):
                 app.taskMgr.stop()
                 return task.done

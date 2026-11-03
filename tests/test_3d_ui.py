@@ -41,6 +41,43 @@ class ThreeDInterfaceTests(unittest.TestCase):
         app.scene(0.1)
         self.assertFalse(app.escort_car.isHidden())
 
+    def test_raw_letter_keys_control_vehicle_and_release(self):
+        app = self.app
+        app.messenger.send("raw-w")
+        app.messenger.send("raw-a")
+        self.assertTrue({"w", "a"}.issubset(app.keys))
+        app.messenger.send("raw-w-up")
+        app.messenger.send("raw-a-up")
+        self.assertFalse({"w", "a"} & app.keys)
+        app.model.cars = [app.model.make_car(400, 0, vehicle=VEHICLES[0])]
+        app.messenger.send("raw-h")
+        self.assertEqual(app.model.requests, 1)
+
+    def test_borderless_toggle_restores_window_geometry_without_fullscreen_mode(self):
+        from panda3d.core import WindowProperties
+        original = WindowProperties()
+        original.setOrigin(120, 80)
+        original.setSize(960, 540)
+        requests = []
+        fake_window = SimpleNamespace(getProperties=lambda: original,
+                                      requestProperties=requests.append)
+        fake = SimpleNamespace(win=fake_window, fullscreen=False, _windowed_rect=None,
+                               pipe=SimpleNamespace(getDisplayWidth=lambda: 1920,
+                                                    getDisplayHeight=lambda: 1080))
+        with patch("game3d.monitor_rectangle", return_value=(-1920, 0, 1920, 1080)):
+            game3d.Game3D.full(fake)
+        self.assertTrue(fake.fullscreen)
+        self.assertTrue(requests[0].getUndecorated())
+        self.assertFalse(requests[0].hasFullscreen())
+        self.assertEqual(tuple(requests[0].getOrigin()), (-1920, 0))
+        self.assertEqual(tuple(requests[0].getSize()), (1920, 1080))
+        game3d.Game3D.full(fake)
+        self.assertFalse(fake.fullscreen)
+        self.assertFalse(requests[1].getUndecorated())
+        self.assertFalse(requests[1].hasFullscreen())
+        self.assertEqual(tuple(requests[1].getOrigin()), (120, 80))
+        self.assertEqual(tuple(requests[1].getSize()), (960, 540))
+
     def test_stall_telemetry_accounts_for_lost_time_without_advancing_model(self):
         app = self.app
         before = dict(app.timing)
@@ -78,7 +115,7 @@ class ThreeDInterfaceTests(unittest.TestCase):
     def test_messenger_signal_and_pause_events(self):
         app = self.app
         app.model.cars = [app.model.make_car(400, 0, vehicle=VEHICLES[0])]
-        app.messenger.send("h")
+        app.messenger.send("raw-h")
         self.assertEqual(app.model.requests, 1)
         app.messenger.send("escape")
         self.assertEqual(app.state, "paused")
@@ -93,13 +130,13 @@ class ThreeDInterfaceTests(unittest.TestCase):
         app = self.app
         app.model.cars = [app.model.make_car(400, lane, vehicle=VEHICLES[0])
                           for lane in (0, -0.66, 0.66)]
-        app.messenger.send("h")
+        app.messenger.send("raw-h")
         app.hud_update()
         reason, hint = app.feedback.getText(), app.feedback_hint.getText()
         self.assertIn("占用", reason)
         self.assertIn("S", hint)
         self.assertIn("冷却", app.signal_caption.getText())
-        app.messenger.send("h")
+        app.messenger.send("raw-h")
         app.pause()
         before = app.model.cooldown, app.model.feedback_seconds
         with patch("game3d.time.perf_counter", return_value=app.last + 0.05):
@@ -341,13 +378,13 @@ class ThreeDInterfaceTests(unittest.TestCase):
     def test_scenario_selection_only_applies_in_escort_menu(self):
         app = self.app
         scenario = app.args.scenario
-        app.messenger.send("c")
+        app.messenger.send("raw-c")
         self.assertEqual(app.args.scenario, scenario)
         app.action("menu")
-        app.messenger.send("c")
+        app.messenger.send("raw-c")
         self.assertNotEqual(app.args.scenario, scenario)
-        app.messenger.send("c")
-        app.messenger.send("c")
+        app.messenger.send("raw-c")
+        app.messenger.send("raw-c")
         self.assertEqual(app.args.scenario, scenario)
         self.assertFalse(app.scenario_button.isHidden())
         app.switch_mode()
