@@ -1,0 +1,15 @@
+{
+  "source": "https://kenney.nl/assets/input-prompts",
+  "download": "https://kenney.nl/media/pages/assets/input-prompts/8de120163f-1783763952/kenney_input-prompts_1.5.zip",
+  "license": "CC0",
+  "retrieved": "2026-10-25",
+  "archive_sha256": "ac2fcf599080b0f3ba2d174c9474db6df1a0e96ff0662580e2da79a122ab78a1",
+  "files": {
+    "keyboard_arrows.png": "60acb8da974486480b9e80d079deddd0fc88fd3fc84aafcb779d6a7a59e4cf5b",
+    "keyboard_c.png": "b567b9677cee28ed6cee1e60a5213ebdb631816fabfd44824990860d1d07f4a4",
+    "keyboard_enter.png": "6ea6de1a2fca79569f25e3c5bb7af5ff2ece6e6a4e416a22f573a17a21926b54",
+    "keyboard_escape.png": "9b85675aa9a3c6edcfb94da7314aa3a77cf77f9934b6c645059577cf901a1bde",
+    "keyboard_h.png": "3f89ef4b7030006f2e6b6a0c29c7063aa2d6bbba27294c9bcf81bd8d16cdc886",
+    "keyboard_tab.png": "b9d41ddb968a48702663e4b13bb5a047c8349ed5708897027d4de794dc35f43c"
+  }
+}
