@@ -163,8 +163,11 @@ class HighwayUI:
         self.label("带上队伍，再出发。", (-1.45, -0.87), 0.034, root, TextNode.ALeft, MUTED)
 
         self.menu_card = self.card(root, 0.95, 0.01, 0.60, 0.77, INK)
-        self.mode_title = self.label("", (0.48, 0.59), 0.057, root, TextNode.ALeft)
-        self.label("当前模式", (0.48, 0.68), 0.032, root, TextNode.ALeft, MUTED)
+        # A quiet coloured surface groups the current selection; it is not a button.
+        self.mode_background = self.card(root, 0.95, 0.645, 0.49, 0.105,
+                                         (0.07, 0.21, 0.20, 1), outline=False)
+        self.mode_title = self.label("", (0.48, 0.575), 0.085, root, TextNode.ALeft)
+        self.mode_caption = self.label("当前模式", (0.48, 0.69), 0.065, root, TextNode.ALeft, MUTED)
         self.mode_button = self.button("", (0.95, 0, 0.405), self.switch_mode, root)
         self.scenario_caption = self.label("路况", (0.48, 0.285), 0.032, root, TextNode.ALeft, MUTED)
         self.scenario_button = self.button("", (0.95, 0, 0.175), self.cycle_scenario, root, height=0.055)

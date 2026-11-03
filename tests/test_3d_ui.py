@@ -44,11 +44,20 @@ class ThreeDInterfaceTests(unittest.TestCase):
     def test_menu_names_current_mode_and_switch_target(self):
         app = self.app
         app.action("menu")
-        self.assertEqual(app.mode_title.getText(), "领航挑战")
-        self.assertIn("切换到经典超车", app.mode_button["text"])
-        app.messenger.send("tab")
-        self.assertEqual(app.mode_title.getText(), "经典超车")
-        self.assertIn("切换到领航挑战", app.mode_button["text"])
+        for mode, target in (("领航挑战", "切换到经典超车"), ("经典超车", "切换到领航挑战")):
+            self.assertEqual(app.mode_title.getText(), mode)
+            self.assertIn(target, app.mode_button["text"])
+            caption_lower, caption_upper = app.mode_caption.getTightBounds(app.menu_content)
+            title_lower, title_upper = app.mode_title.getTightBounds(app.menu_content)
+            self.assertGreater(caption_lower.z, title_upper.z)
+            self.assertGreater(title_lower.z, app.mode_button.getZ() + 0.067)
+            self.assertLess(caption_upper.z, app.menu_card.getZ() + 0.77)
+            for low, high in ((caption_lower, caption_upper), (title_lower, title_upper)):
+                self.assertGreaterEqual(low.x, app.mode_background.getX() - 0.49)
+                self.assertLessEqual(high.x, app.mode_background.getX() + 0.49)
+                self.assertGreaterEqual(low.z, app.mode_background.getZ() - 0.105)
+                self.assertLessEqual(high.z, app.mode_background.getZ() + 0.105)
+            app.messenger.send("tab")
 
     def test_raw_letter_keys_control_vehicle_and_release(self):
         app = self.app
