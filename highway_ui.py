@@ -17,7 +17,7 @@ INK = (0.035, 0.064, 0.085, 0.98)
 CARD = (0.055, 0.098, 0.126, 0.97)
 BORDER = (0.18, 0.28, 0.31, 0.75)
 WHITE = (0.94, 0.96, 0.93, 1)
-MUTED = (0.55, 0.67, 0.70, 1)
+MUTED = (0.67, 0.77, 0.79, 1)
 MINT = (0.36, 0.91, 0.73, 1)
 GOLD = (1, 0.73, 0.30, 1)
 RED = (1, 0.43, 0.35, 1)
@@ -61,6 +61,10 @@ def rounded(width, height, color, radius=0.035):
 class HighwayUI:
     def label(self, text, pos, scale=0.05, parent=None, align=TextNode.ACenter,
               color=WHITE):
+        # Small captions were difficult to read even on a large monitor.
+        # Enlarge the supporting labels throughout menu, HUD and results.
+        if scale <= 0.04:
+            scale *= 1.60
         return OnscreenText(text, pos=pos, scale=scale, font=self.font, fg=color,
                             align=align, parent=parent, mayChange=True)
 
@@ -82,8 +86,8 @@ class HighwayUI:
                             geom=tuple(rounded(width, height, color, 0.025)
                                        for color in (base, pressed, hover, base)),
                             frameSize=(-width, width, -height, height), relief=None,
-                            frameColor=(0, 0, 0, 0), text_font=self.font, text_scale=0.043,
-                            text_fg=INK if primary else WHITE, text_pos=(0, -0.015),
+                            frameColor=(0, 0, 0, 0), text_font=self.font, text_scale=0.052,
+                            text_fg=INK if primary else WHITE, text_pos=(0, -0.018),
                             pressEffect=False, rolloverSound=None, clickSound=None)
 
     def key_icon(self, name, parent, x, z, scale=0.044):
@@ -104,7 +108,7 @@ class HighwayUI:
 
         mission = self.card(self.hud, -0.10, 0.80, 0.86, 0.125)
         self.mission_caption = self.label("领航挑战", (-0.76, 0.065), 0.032, mission, TextNode.ALeft, MINT)
-        self.hudtext = self.label("", (-0.76, -0.015), 0.047, mission, TextNode.ALeft)
+        self.hudtext = self.label("", (-0.76, -0.015), 0.054, mission, TextNode.ALeft)
         self.progress_bar = DirectWaitBar(parent=mission, range=100, value=0,
                                           frameSize=(-0.76, 0.76, -0.007, 0.007), pos=(0, 0, -0.075),
                                           barColor=MINT, frameColor=(0.12, 0.23, 0.27, 1), relief=None)
@@ -152,7 +156,7 @@ class HighwayUI:
         self.title = self.label("极速公路", (-1.46, 0.43), 0.145, root, TextNode.ALeft)
         self.label("S P E E D   H I G H W A Y", (-1.45, 0.31), 0.034, root, TextNode.ALeft, MUTED)
         self.subtitle = self.label("", (-1.45, 0.12), 0.055, root, TextNode.ALeft, MINT)
-        self.info = self.label("", (-1.45, -0.04), 0.043, root, TextNode.ALeft)
+        self.info = self.label("", (-1.45, -0.04), 0.055, root, TextNode.ALeft)
         self.menu_story = DirectFrame(parent=root, frameColor=(0, 0, 0, 0), relief=None)
         self._route_story(self.menu_story)
         self.hero_note = self.label("", (-1.45, -0.58), 0.034, root, TextNode.ALeft, MUTED)
@@ -160,13 +164,13 @@ class HighwayUI:
 
         self.menu_card = self.card(root, 0.95, 0.01, 0.60, 0.77, INK)
         self.mode_title = self.label("", (0.48, 0.59), 0.057, root, TextNode.ALeft)
-        self.label("选择旅程", (0.48, 0.68), 0.032, root, TextNode.ALeft, MUTED)
+        self.label("当前模式", (0.48, 0.68), 0.032, root, TextNode.ALeft, MUTED)
         self.mode_button = self.button("", (0.95, 0, 0.405), self.switch_mode, root)
         self.scenario_caption = self.label("路况", (0.48, 0.285), 0.032, root, TextNode.ALeft, MUTED)
         self.scenario_button = self.button("", (0.95, 0, 0.175), self.cycle_scenario, root, height=0.055)
         self.classic_route = self.label("无限公路 · 挑战最高分", (0.95, 0.16), 0.036, root, color=MUTED)
         self.label("我的座驾", (0.48, 0.055), 0.032, root, TextNode.ALeft, MUTED)
-        self.pick = self.label("", (0.95, -0.07), 0.044, root)
+        self.pick = self.label("", (0.95, -0.07), 0.055, root)
         self.left = self.button("‹", (0.53, 0, -0.055), lambda: self.action("prev"), root, width=0.065, height=0.050)
         self.right = self.button("›", (1.37, 0, -0.055), lambda: self.action("next"), root, width=0.065, height=0.050)
         self.record_caption = self.label("护送纪录", (0.48, -0.205), 0.034, root, TextNode.ALeft, MUTED)
@@ -236,7 +240,7 @@ class HighwayUI:
             self.hero_note.setText("90 秒任务  /  安全让行  /  车队协作" if escort else
                                    "无限公路  /  六种车型  /  超车 +150")
             self.menu_story.show() if escort else self.menu_story.hide()
-            self.mode_button["text"] = "经典超车    /    TAB 切换" if escort else "领航挑战    /    TAB 切换"
+            self.mode_button["text"] = "切换到经典超车  /  TAB" if escort else "切换到领航挑战  /  TAB"
             self.primary["text"] = "开始领航     →" if escort else "开始挑战     →"
             self.secondary["text"] = "退出游戏"
             self.secondary["command"] = lambda: self.action("quit")

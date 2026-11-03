@@ -41,6 +41,15 @@ class ThreeDInterfaceTests(unittest.TestCase):
         app.scene(0.1)
         self.assertFalse(app.escort_car.isHidden())
 
+    def test_menu_names_current_mode_and_switch_target(self):
+        app = self.app
+        app.action("menu")
+        self.assertEqual(app.mode_title.getText(), "领航挑战")
+        self.assertIn("切换到经典超车", app.mode_button["text"])
+        app.messenger.send("tab")
+        self.assertEqual(app.mode_title.getText(), "经典超车")
+        self.assertIn("切换到领航挑战", app.mode_button["text"])
+
     def test_raw_letter_keys_control_vehicle_and_release(self):
         app = self.app
         app.messenger.send("raw-w")
