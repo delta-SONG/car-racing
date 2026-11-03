@@ -4,6 +4,52 @@ from pathlib import Path
 import sys
 
 
+def disable_game_ime():
+    """Disable IME only in this game's window thread, before creating it."""
+    if sys.platform != 'win32':
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+        current = ctypes.windll.kernel32.GetCurrentThreadId
+        current.restype = wintypes.DWORD
+        disable = ctypes.windll.imm32.ImmDisableIME
+        disable.argtypes = (wintypes.DWORD,)
+        disable.restype = wintypes.BOOL
+        return bool(disable(current()))
+    except (AttributeError, OSError):
+        return False
+
+
+def monitor_rectangle(window, fallback):
+    """Current monitor in desktop coordinates, without changing display mode."""
+    if sys.platform != 'win32':
+        return fallback
+    try:
+        import ctypes
+        from ctypes import wintypes
+        class MonitorInfo(ctypes.Structure):
+            _fields_ = [('cbSize', wintypes.DWORD), ('rcMonitor', wintypes.RECT),
+                        ('rcWork', wintypes.RECT), ('dwFlags', wintypes.DWORD)]
+        user = ctypes.windll.user32
+        find = user.MonitorFromWindow
+        find.argtypes = (wintypes.HWND, wintypes.DWORD)
+        find.restype = wintypes.HANDLE
+        info = user.GetMonitorInfoW
+        info.argtypes = (wintypes.HANDLE, ctypes.POINTER(MonitorInfo))
+        info.restype = wintypes.BOOL
+        hwnd = window.getWindowHandle().getIntHandle()
+        monitor = find(hwnd, 2)  # MONITOR_DEFAULTTONEAREST
+        rect = MonitorInfo()
+        rect.cbSize = ctypes.sizeof(rect)
+        if monitor and info(monitor, ctypes.byref(rect)):
+            r = rect.rcMonitor
+            return (r.left, r.top, r.right - r.left, r.bottom - r.top)
+    except (AttributeError, OSError, TypeError, ValueError):
+        pass
+    return fallback
+
+
 def save_directory(platform=None, home=None, environ=None):
     platform = sys.platform if platform is None else platform
     home = Path.home() if home is None else Path(home)

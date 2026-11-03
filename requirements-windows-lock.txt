@@ -1,0 +1,9 @@
+altgraph==0.17.5
+packaging==26.3
+panda3d==1.10.15
+pefile==2024.8.26
+pygame==2.6.1
+pyinstaller==6.19.0
+pyinstaller-hooks-contrib==2026.9
+pywin32-ctypes==0.2.3
+setuptools==84.2.1

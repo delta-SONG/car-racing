@@ -6,3 +6,10 @@ dist/
 *.spec
 assets/NotoSansSC.ttf
 assets/NotoSansCJKsc-Regular.otf
+
+# Local development runtime and generated evidence
+.venv-dev/
+.runtime/
+.build-tools/
+.build-cache/
+reports/
